@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iSignal — Mines Analyzer</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <style>
+    body, html {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #06111f, #030712);
+      color: #fff;
+      font-family: Inter, sans-serif;
+      text-align: center;
+      overflow: hidden;
+      transition: background 0.3s ease;
+      position: relative;
+    }
+
+    /* Неоновая волна */
+    .wave {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,153,0.6) 0%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      opacity: 0.9;
+      animation: waveExpand 0.8s ease-out forwards;
+      filter: blur(4px);
+    }
+
+    @keyframes waveExpand {
+      0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 0.9;
+      }
+      80% {
+        transform: translate(-50%, -50%) scale(10);
+        opacity: 0.3;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(14);
+        opacity: 0;
+      }
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      animation: fadeIn 0.6s ease;
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      z-index: 2;
+    }
+    .active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
+
+    input {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      width: 80%;
+      max-width: 320px;
+      font-size: 14px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #06d66b, #04aa4f);
+      color: #061b0f;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 40px;
+      cursor: pointer;
+      border: none;
+      transition: all .2s ease;
+    }
+    .btn:hover { transform: scale(1.05); }
+
+    .back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: none;
+      border: none;
+      color: #0ff;
+      font-size: 22px;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .back-btn:hover { color: #07c56e; }
+
+    .loader {
+      width: 60px;
+      height: 60px;
+      border: 6px solid rgba(255,255,255,0.1);
+      border-top: 6px solid #08d36a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 0% {transform: rotate(0);} 100% {transform: rotate(360deg);} }
+
+    /* Mines grid */
+    .mine-setup {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      user-select: none;
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    .cell.mine {
+      background: rgba(255,0,0,0.3);
+      box-shadow: 0 0 16px rgba(255,0,0,0.4);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+      70% { opacity: 1; transform: scale(1.1) rotate(4deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    .mine-options {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .mine-option {
+      background: rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 600;
+    }
+    .mine-option.active {
+      background: linear-gradient(90deg, #06d66b, #04aa4f);
+      color: #000;
+    }
+    .mine-option:hover { transform: scale(1.1); }
+
+    /* Эффект взрыва */
+    .shake { animation: shake 0.4s ease-in-out; }
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-4px, 2px); }
+      40% { transform: translate(4px, -3px); }
+      60% { transform: translate(-2px, 3px); }
+      80% { transform: translate(2px, -2px); }
+    }
+
+    .flash { animation: flash 0.25s ease; }
+    @keyframes flash {
+      0% { background: #f00; }
+      50% { background: #0a162d; }
+      100% { background: #030712; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 1. Заставка -->
+  <div class="screen active" id="splash">
+    <h1>iSignal</h1>
+  </div>
+
+  <!-- 2. Ввод ссылки -->
+  <div class="screen" id="link-screen">
+    <h2>Введите ссылку казино</h2>
+    <input type="text" id="casino-link" placeholder="https://example.com/game/mines" />
+    <button class="btn" id="calc-btn">Calculate</button>
+    <p id="error" style="color:#f55; font-size:13px; display:none;">Некорректная ссылка</p>
+  </div>
+
+  <!-- 3. Подключение -->
+  <div class="screen" id="connecting">
+    <div class="loader"></div>
+    <p>Connecting...</p>
+  </div>
+
+  <!-- 4. Анализатор -->
+  <div class="screen" id="analyzer">
+    <button class="back-btn" id="backBtn">←</button>
+    <h2>Mines Analyzer</h2>
+
+    <div class="mine-options" id="mineOptions">
+      <div class="mine-option active" data-mines="3">3</div>
+      <div class="mine-option" data-mines="5">5</div>
+      <div class="mine-option" data-mines="8">8</div>
+      <div class="mine-option" data-mines="10">10</div>
+      <div class="mine-option" data-mines="15">15</div>
+    </div>
+
+    <button class="btn" id="generate">Calculate</button>
+    <div class="mine-setup" id="mine-grid"></div>
+  </div>
+
+  <audio id="clickSound" src="../assets/sounds/click.mp3" preload="auto"></audio>
+  <audio id="explosionSound" src="../assets/sounds/explosion.mp3" preload="auto"></audio>
+
+  <script>
+    const splash = document.getElementById('splash');
+    const linkScreen = document.getElementById('link-screen');
+    const connecting = document.getElementById('connecting');
+    const analyzer = document.getElementById('analyzer');
+    const clickSound = document.getElementById('clickSound');
+    const explosionSound = document.getElementById('explosionSound');
+
+    // Заставка
+    setTimeout(() => {
+      splash.classList.remove('active');
+      linkScreen.classList.add('active');
+    }, 2000);
+
+    // Проверка ссылки
+    document.getElementById('calc-btn').addEventListener('click', () => {
+      const link = document.getElementById('casino-link').value.trim();
+      const error = document.getElementById('error');
+
+      if (!/^https?:\/\/[\w\-_.]+/.test(link)) {
+        error.style.display = 'block';
+        return;
+      }
+
+      error.style.display = 'none';
+      linkScreen.classList.remove('active');
+      connecting.classList.add('active');
+
+      setTimeout(() => {
+        connecting.classList.remove('active');
+        analyzer.classList.add('active');
+      }, 5000 + Math.random() * 2000);
+    });
+
+    // Назад — на главную
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = "../index.html";
+    });
+
+    // Выбор мин
+    let mineCount = 3;
+    document.querySelectorAll('.mine-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.mine-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        mineCount = parseInt(opt.dataset.mines);
+      });
+    });
+
+    // Генерация одной попытки
+    document.getElementById('generate').addEventListener('click', () => {
+      const grid = document.getElementById('mine-grid');
+      grid.innerHTML = '';
+
+      const cells = Array.from({ length: 25 }, (_, i) => i);
+      const mines = new Set();
+      while (mines.size < mineCount) mines.add(Math.floor(Math.random() * 25));
+
+      cells.forEach((i, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        grid.appendChild(cell);
+
+        setTimeout(() => {
+          cell.style.animation = 'popIn 0.4s ease forwards';
+          clickSound.currentTime = 0;
+          clickSound.play();
+
+          if (mines.has(i)) {
+            cell.classList.add('mine');
+            cell.textContent = '💣';
+            explosionSound.currentTime = 0;
+            explosionSound.play();
+
+            // Вибрация и вспышка
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 400);
+
+            // Неоновая волна
+            const wave = document.createElement('div');
+            wave.className = 'wave';
+            document.body.appendChild(wave);
+            setTimeout(() => wave.remove(), 800);
+          }
+        }, idx * 80);
+      });
+    });
+  </script>
+</body>
+</html>

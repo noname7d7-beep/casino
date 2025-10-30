@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>iSignal — Games</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: url('assets/bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 28px;
+      font-weight: bold;
+      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .content {
+      padding: 40px 20px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+      padding: 15px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .thumb {
+      width: 100%;
+      height: 120px;
+      overflow: hidden;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .open-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4747;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .open-btn:hover {
+      background: #ff2a2a;
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <!-- Header -->
+    <header class="header">💡 iSignal</header>
+
+    <!-- Featured / grid -->
+    <section class="content">
+      <h2 class="section-title">Выберите игру</h2>
+      <div class="grid" id="games-grid">
+
+        <!-- Mines -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/mines.jpg" alt="Mines" class="thumb-img">
+          </div>
+          <div class="title">Mines</div>
+          <button class="open-btn" onclick="window.location.href='games/mines.html'">Open</button>
+        </div>
+
+        <!-- Bombucks -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/bombucks.jpg" alt="Bombucks" class="thumb-img">
+          </div>
+          <div class="title">Bombucks</div>
+          <button class="open-btn" onclick="window.location.href='games/bombucks.html'">Open</button>
+        </div>
+
+        <!-- Brawl Pirates -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/brawl-pirates.jpg" alt="Brawl Pirates" class="thumb-img">
+          </div>
+          <div class="title">Brawl Pirates</div>
+          <button class="open-btn" onclick="window.location.href='games/brawl-pirates.html'">Open</button>
+        </div>
+
+        <!-- FootballX -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/footballx.jpg" alt="FootballX" class="thumb-img">
+          </div>
+          <div class="title">FootballX</div>
+          <button class="open-btn" onclick="window.location.href='games/footballx.html'">Open</button>
+        </div>
+
+        <!-- Plinko -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/plinko.jpg" alt="Plinko" class="thumb-img">
+          </div>
+          <div class="title">Plinko</div>
+          <button class="open-btn" onclick="window.location.href='games/plinko.html'">Open</button>
+        </div>
+
+        <!-- Aviator -->
+        <div class="card">
+          <div class="thumb">
+            <img src="assets/aviator.jpg" alt="Aviator" class="thumb-img">
+          </div>
+          <div class="title">Aviator</div>
+          <button class="open-btn" onclick="window.location.href='games/aviator.html'">Open</button>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</body>
+</html>
