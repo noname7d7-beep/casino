@@ -1,0 +1,140 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background: url("../assets/bg/bdadm.jpg") center/cover no-repeat fixed;
+  color: #fff;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 18px auto 40px;
+  padding: 0 14px 24px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+  background: linear-gradient(90deg,#ff006a,#ff7e00);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.logout {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.hint {
+  margin: 4px 0 12px;
+  font-size: 13px;
+  opacity: .85;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: rgba(8, 12, 24, .9);
+  border-radius: 14px;
+  padding: 12px 12px 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 0 12px rgba(0,0,0,.5);
+}
+
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.card-title span {
+  font-size: 14px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,126,0,.15);
+  color: #ffd9a1;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.code-input {
+  flex: 1;
+  border-radius: 10px;
+  border: none;
+  padding: 8px 9px;
+  font-size: 13px;
+  background: rgba(255,255,255,.07);
+  color: #fff;
+}
+
+.code-input[readonly] {
+  cursor: default;
+}
+
+.copy-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
+.gen-btn {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  padding: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+  background: linear-gradient(90deg,#ff006a,#ff7e00);
+  color: #fff;
+}
+
+.status {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: .85;
+}

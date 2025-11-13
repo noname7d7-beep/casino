@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MONEY TALKS — Chicken Road</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap');
+
+:root {
+  --bg: #020617;
+  --card: rgba(15, 23, 42, 0.96);
+  --border: rgba(148, 163, 184, 0.4);
+  --accent1: #38bdf8;
+  --accent2: #6366f1;
+  --danger: #f97373;
+  --success: #4ade80;
+  --gold1: #fde047;
+  --gold2: #facc15;
+  --gold3: #fef9c3;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+body {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #e5e7eb;
+  background: radial-gradient(circle at top, #0f172a 0%, #020617 55%, #020617 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* лёгкий фон */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(56,189,248,0.08) 0, transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(129,140,248,0.07) 0, transparent 55%),
+    radial-gradient(circle at 50% 80%, rgba(251,146,60,0.08) 0, transparent 55%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* кнопка назад */
+.back-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  border: 1px solid rgba(148,163,184,0.5);
+  background: rgba(15,23,42,0.9);
+  color: #e5e7eb;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 20;
+}
+.back-btn:hover {
+  border-color: #38bdf8;
+}
+
+/* контейнер */
+.app-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+}
+
+/* экраны */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 20px 18px 22px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.96));
+  border: 1px solid var(--border);
+  box-shadow:
+    0 22px 50px rgba(15,23,42,0.9),
+    0 0 0 1px rgba(15,23,42,0.7);
+}
+.screen.active {
+  display: flex;
+}
+
+/* заголовки */
+.card-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #e5e7eb, #f97316);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.sub {
+  font-size: 12px;
+  opacity: .75;
+}
+
+/* input-блоки */
+.field-wrap {
+  width: 100%;
+  margin-top: 6px;
+}
+.label {
+  font-size: 12px;
+  text-align: left;
+  opacity: .7;
+  margin-bottom: 4px;
+}
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.input-row input {
+  flex: 1;
+  padding: 11px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: rgba(15,23,42,0.95);
+  color: #e5e7eb;
+  font-size: 14px;
+  outline: none;
+}
+.input-row input:focus {
+  border-color: var(--accent1);
+}
+.indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: rgba(15,23,42,0.9);
+}
+.indicator.ok {
+  border-color: var(--success);
+  color: var(--success);
+}
+.indicator.err {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.msg {
+  font-size: 11px;
+  color: var(--danger);
+  min-height: 14px;
+  margin-top: 4px;
+}
+
+/* кнопки */
+.btn {
+  margin-top: 12px;
+  padding: 11px 24px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  background: linear-gradient(110deg, #38bdf8, #6366f1);
+  color: #020617;
+  box-shadow: 0 12px 30px rgba(56,189,248,0.45);
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s;
+}
+.btn:active {
+  transform: translateY(1px) scale(.98);
+  box-shadow: 0 8px 18px rgba(56,189,248,0.35);
+}
+.btn:disabled {
+  opacity: .5;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* connection */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 5px solid rgba(148,163,184,0.35);
+  border-top-color: var(--accent1);
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* attempts */
+.attempts {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: .8;
+}
+
+/* road / игра */
+.road-box {
+  width: 100%;
+  margin-top: 14px;
+  border-radius: 16px;
+  background: radial-gradient(circle at top, rgba(15,23,42,1), rgba(15,23,42,0.95));
+  border: 1px solid rgba(30,64,175,0.7);
+  box-shadow: 0 0 32px rgba(56,189,248,0.25);
+  padding: 12px;
+}
+.road-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 7/3;
+  border-radius: 12px;
+  background: radial-gradient(circle at top, #0b1120, #020617 65%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.road-cells {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  width: 92%;
+}
+.road-cell {
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(15,23,42,0.95));
+  border: 1px solid rgba(30,64,175,0.7);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #e5e7eb;
+}
+.road-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(148,163,184,0.25) 0,
+    rgba(148,163,184,0.25) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+  opacity: .22;
+  pointer-events: none;
+}
+.road-cell.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56,189,248,0.7);
+}
+.road-cell.crash {
+  background: radial-gradient(circle at center, rgba(248,113,113,0.9), rgba(15,23,42,0.95));
+  border-color: #f97373;
+  box-shadow: 0 0 22px rgba(248,113,113,0.85);
+}
+
+/* дорожные линии снизу/сверху */
+.road-inner::before,
+.road-inner::after {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  height: 3px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(252,211,77,0.9) 0,
+    rgba(252,211,77,0.9) 10px,
+    transparent 10px,
+    transparent 18px
+  );
+  opacity: .7;
+}
+.road-inner::before { top: 18%; }
+.road-inner::after { bottom: 18%; }
+
+/* коэффициенты */
+.coef-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+.coef-chip {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 3px 4px;
+  text-align: center;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid rgba(148,163,184,0.5);
+  color: #e5e7eb;
+  opacity: .9;
+}
+.coef-chip.active {
+  background: radial-gradient(circle at top, var(--gold1), var(--gold2));
+  color: #1f2937;
+  border-color: #facc15;
+  box-shadow: 0 0 16px rgba(250,204,21,0.8);
+}
+
+/* текст сигнала */
+.signal-text {
+  font-size: 13px;
+  margin-top: 10px;
+  opacity: .85;
+}
+.hint-bottom {
+  font-size: 11px;
+  opacity: .6;
+}
+</style>
+</head>
+<body>
+
+<button class="back-btn" onclick="window.location.href='../index.html'">← <span>MONEY TALKS</span></button>
+
+<div class="app-wrap">
+
+  <!-- PROMO -->
+  <section id="promoScreen" class="screen active">
+    <div class="card-title">CHICKEN ROAD</div>
+    <div class="sub">Enter one-time promo code</div>
+
+    <div class="field-wrap">
+      <div class="label">Promo code</div>
+      <div class="input-row">
+        <input id="promoInput" placeholder="EXAMPLE88" maxlength="16" />
+        <div id="promoIndicator" class="indicator">?</div>
+      </div>
+      <div id="promoMsg" class="msg"></div>
+    </div>
+
+    <button id="promoBtn" class="btn">Check promo</button>
+  </section>
+
+  <!-- LINK -->
+  <section id="linkScreen" class="screen">
+    <div class="card-title">CASINO LINK</div>
+    <div class="sub">Paste Chicken Road game URL from your casino</div>
+
+    <div class="field-wrap">
+      <div class="label">Game link</div>
+      <div class="input-row">
+        <input id="linkInput" placeholder="https://example.com/game/chickenroad" />
+        <div id="linkIndicator" class="indicator">?</div>
+      </div>
+      <div id="linkMsg" class="msg"></div>
+    </div>
+
+    <button id="linkBtn" class="btn">Connect</button>
+  </section>
+
+  <!-- CONNECTION -->
+  <section id="connectScreen" class="screen">
+    <div class="spinner"></div>
+    <div class="sub" style="text-transform:uppercase; letter-spacing:.18em;">Connecting...</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="card-title">CHICKEN ROAD ANALYZER</div>
+    <div class="sub">Simulated lane-crossing signal. No real bets.</div>
+
+    <div id="attemptsText" class="attempts">Attempts left: 7</div>
+
+    <div class="road-box">
+      <div class="road-inner">
+        <div id="roadCells" class="road-cells"></div>
+      </div>
+      <div id="coefRow" class="coef-row"></div>
+    </div>
+
+    <div id="signalText" class="signal-text">Press “Get signal” to analyze.</div>
+
+    <button id="signalBtn" class="btn">Get signal</button>
+    <div class="hint-bottom">Each promo code has 7 signals for Chicken Road.</div>
+  </section>
+
+</div>
+
+<script>
+const API_BASE = "/api";
+const GAME_ID = "chickenroad";
+
+const POSITIONS = 8;
+// Примерные кэфы (можешь потом подкрутить)
+const COEFFS = [1.10, 1.35, 1.70, 2.10, 2.80, 3.60, 4.80, 6.20];
+
+let attemptsLeft = 0;
+let currentPromo = null;
+let isAnimating = false;
+
+/* экраны */
+const promoScreen   = document.getElementById("promoScreen");
+const linkScreen    = document.getElementById("linkScreen");
+const connectScreen = document.getElementById("connectScreen");
+const gameScreen    = document.getElementById("gameScreen");
+
+function showScreen(screen) {
+  [promoScreen, linkScreen, connectScreen, gameScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+/* ---------- построение дороги и кэфов ---------- */
+const roadCellsContainer = document.getElementById("roadCells");
+const coefRowContainer   = document.getElementById("coefRow");
+const signalText         = document.getElementById("signalText");
+
+function buildBoard() {
+  roadCellsContainer.innerHTML = "";
+  coefRowContainer.innerHTML = "";
+
+  for (let i = 0; i < POSITIONS; i++) {
+    const cell = document.createElement("div");
+    cell.className = "road-cell";
+    cell.dataset.index = String(i);
+    roadCellsContainer.appendChild(cell);
+
+    const chip = document.createElement("div");
+    chip.className = "coef-chip";
+    chip.dataset.index = String(i);
+    chip.textContent = COEFFS[i].toFixed(2) + "x";
+    coefRowContainer.appendChild(chip);
+  }
+}
+
+/* ---------- PROMO ---------- */
+const promoInput     = document.getElementById("promoInput");
+const promoIndicator = document.getElementById("promoIndicator");
+const promoMsg       = document.getElementById("promoMsg");
+const promoBtn       = document.getElementById("promoBtn");
+const attemptsEl     = document.getElementById("attemptsText");
+
+function updateAttemptsText() {
+  attemptsEl.textContent = `Attempts left: ${attemptsLeft}`;
+}
+
+promoInput.addEventListener("input", () => {
+  promoIndicator.className = "indicator";
+  promoIndicator.textContent = "?";
+  promoMsg.textContent = "";
+});
+
+promoBtn.onclick = async () => {
+  const code = promoInput.value.trim().toUpperCase();
+  if (!code) {
+    promoMsg.textContent = "Enter promo code";
+    promoIndicator.className = "indicator err";
+    promoIndicator.textContent = "✕";
+    return;
+  }
+
+  promoBtn.disabled = true;
+  promoMsg.textContent = "";
+  promoIndicator.className = "indicator";
+  promoIndicator.textContent = "…";
+
+  try {
+    const res = await fetch(`${API_BASE}/promo/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ game: GAME_ID, code })
+    });
+
+    const data = await res.json();
+
+    if (!data.valid) {
+      promoIndicator.className = "indicator err";
+      promoIndicator.textContent = "✕";
+      promoMsg.textContent = "Promo invalid or used up.";
+      promoBtn.disabled = false;
+      return;
+    }
+
+    attemptsLeft = data.attempts_left;
+    currentPromo = code;
+
+    updateAttemptsText();
+
+    promoIndicator.className = "indicator ok";
+    promoIndicator.textContent = "✓";
+    promoMsg.textContent = "";
+
+    setTimeout(() => {
+      showScreen(linkScreen);
+    }, 250);
+
+  } catch (e) {
+    console.error(e);
+    promoIndicator.className = "indicator err";
+    promoIndicator.textContent = "!";
+    promoMsg.textContent = "Connection error.";
+  } finally {
+    promoBtn.disabled = false;
+  }
+};
+
+/* ---------- LINK ---------- */
+const linkInput     = document.getElementById("linkInput");
+const linkIndicator = document.getElementById("linkIndicator");
+const linkMsg       = document.getElementById("linkMsg");
+const linkBtn       = document.getElementById("linkBtn");
+
+linkInput.addEventListener("input", () => {
+  linkIndicator.className = "indicator";
+  linkIndicator.textContent = "?";
+  linkMsg.textContent = "";
+});
+
+function isValidUrl(url) {
+  return /^https?:\/\/[\w\-_.]+/i.test(url);
+}
+
+linkBtn.onclick = () => {
+  const url = linkInput.value.trim();
+
+  if (!isValidUrl(url)) {
+    linkIndicator.className = "indicator err";
+    linkIndicator.textContent = "✕";
+    linkMsg.textContent = "Invalid URL.";
+    return;
+  }
+
+  linkIndicator.className = "indicator ok";
+  linkIndicator.textContent = "✓";
+  linkMsg.textContent = "";
+
+  showScreen(connectScreen);
+
+  setTimeout(() => {
+    updateAttemptsText();
+    showScreen(gameScreen);
+  }, 2200 + Math.random() * 800);
+};
+
+/* ---------- сервер: списание попытки ---------- */
+async function requestUseFromServer() {
+  if (!currentPromo) throw new Error("No promo");
+  const res = await fetch(`${API_BASE}/game/use`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game: GAME_ID, code: currentPromo })
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    if (data.detail === "limit_exceeded") {
+      attemptsLeft = 0;
+      updateAttemptsText();
+      throw new Error("limit");
+    }
+    throw new Error("server");
+  }
+
+  const data = await res.json();
+  attemptsLeft = data.remaining;
+  return data;
+}
+
+/* ---------- анимация курицы ---------- */
+const signalBtn = document.getElementById("signalBtn");
+
+function getStopIndex() {
+  // лёгкий перекос к середине
+  const r = Math.random();
+  if (r < 0.15) return 0;
+  if (r < 0.30) return 1;
+  if (r < 0.50) return 2;
+  if (r < 0.70) return 3;
+  if (r < 0.85) return 4;
+  if (r < 0.93) return 5;
+  if (r < 0.98) return 6;
+  return 7;
+}
+
+function runChickenAnimation(stopIndex) {
+  const cells = Array.from(document.querySelectorAll(".road-cell"));
+  const chips = Array.from(document.querySelectorAll(".coef-chip"));
+
+  cells.forEach(c => {
+    c.classList.remove("active", "crash");
+    c.textContent = "";
+  });
+  chips.forEach(c => c.classList.remove("active"));
+  signalText.textContent = "Analyzing road...";
+
+  let i = 0;
+  let prev = -1;
+
+  const timer = setInterval(() => {
+    if (prev >= 0 && prev < cells.length) {
+      cells[prev].classList.remove("active");
+      if (prev !== stopIndex) {
+        cells[prev].textContent = "";
+      }
+    }
+
+    const cell = cells[i];
+    cell.classList.add("active");
+    cell.textContent = "🐔";
+    prev = i;
+
+    if (i === stopIndex) {
+      clearInterval(timer);
+      cell.classList.add("crash");
+      cell.textContent = "💥🐔";
+
+      const coef = COEFFS[stopIndex];
+      const chip = chips[stopIndex];
+      chip.classList.add("active");
+
+      signalText.textContent = `Signal: go to cell ${stopIndex + 1} · coef ${coef.toFixed(2)}x`;
+
+      isAnimating = false;
+      signalBtn.disabled = false;
+      return;
+    }
+
+    i++;
+    if (i >= cells.length) {
+      clearInterval(timer);
+      isAnimating = false;
+      signalBtn.disabled = false;
+    }
+  }, 95); // быстро, как ты и хотел
+}
+
+/* ---------- нажатие "Get signal" ---------- */
+signalBtn.onclick = async () => {
+  if (isAnimating) return;
+
+  if (!currentPromo) {
+    alert("Promo code required.");
+    showScreen(promoScreen);
+    return;
+  }
+
+  if (attemptsLeft <= 0) {
+    alert("All attempts are used for this promo.");
+    showScreen(promoScreen);
+    return;
+  }
+
+  signalBtn.disabled = true;
+
+  try {
+    await requestUseFromServer();
+  } catch (e) {
+    if (e.message === "limit") {
+      alert("All attempts are used for this promo.");
+      showScreen(promoScreen);
+    } else {
+      alert("Server error. Try again later.");
+    }
+    signalBtn.disabled = false;
+    return;
+  }
+
+  updateAttemptsText();
+  isAnimating = true;
+
+  const stopIndex = getStopIndex();
+  runChickenAnimation(stopIndex);
+};
+
+/* init */
+document.addEventListener("DOMContentLoaded", buildBoard);
+</script>
+
+</body>
+</html>

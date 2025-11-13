@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MONEY TALKS — Mines</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+  --bg: #020617;
+  --accent1: #38bdf8;
+  --accent2: #6366f1;
+  --danger: #f87171;
+  --success: #4ade80;
+  --cell: rgba(255,255,255,0.06);
+  --cell-border: rgba(255,255,255,0.15);
+}
+
+* { box-sizing: border-box; }
+html,body{
+  margin:0; padding:0; height:100%;
+  font-family:Inter, sans-serif;
+  background:#020617; color:#e5e7eb;
+}
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.back-btn {
+  position:fixed;
+  top:12px; left:12px;
+  padding:6px 14px;
+  border-radius:999px;
+  background:rgba(15,23,42,0.95);
+  border:1px solid rgba(148,163,184,0.4);
+  color:#e5e7eb;
+  font-size:14px;
+  z-index:20;
+  cursor:pointer;
+}
+
+.app-wrap {
+  width:100%;
+  max-width:480px;
+  padding:16px;
+}
+
+.screen {
+  display:none;
+  flex-direction:column;
+  gap:16px;
+  background:rgba(15,23,42,0.95);
+  padding:24px;
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,0.4);
+}
+.screen.active{ display:flex; }
+
+.card-title{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  background:linear-gradient(90deg,#fff,#f97316);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.sub{ font-size:12px; opacity:.75; }
+
+.field-wrap{ width:100%; }
+.label{ font-size:12px; opacity:.7; margin-bottom:4px; }
+.input-row{ display:flex; gap:8px; }
+.input-row input{
+  flex:1; padding:12px;
+  border-radius:999px;
+  background:#0f172a;
+  border:1px solid rgba(148,163,184,0.5);
+  color:#e5e7eb;
+}
+.indicator{
+  width:28px;height:28px;
+  border-radius:50%; display:flex;
+  align-items:center; justify-content:center;
+  border:1px solid rgba(148,163,184,0.5);
+}
+.indicator.ok{ border-color:var(--success); color:var(--success); }
+.indicator.err{ border-color:var(--danger); color:var(--danger); }
+
+.msg{ font-size:11px; color:var(--danger); min-height:12px; }
+
+.btn{
+  padding:12px 24px;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  color:#020617;
+}
+
+/* loader */
+.spinner {
+  width:48px; height:48px;
+  border-radius:50%;
+  border:5px solid rgba(148,163,184,0.35);
+  border-top-color:#38bdf8;
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+@keyframes spin{ to{ transform:rotate(360deg);} }
+
+/* GAME */
+.mine-options{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.mine-option{
+  padding:8px 14px;
+  border-radius:12px;
+  background:#0f172a;
+  border:1px solid rgba(148,163,184,0.5);
+  cursor:pointer;
+  font-weight:600;
+  transition:0.2s;
+}
+.mine-option.active{
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  color:#020617;
+}
+
+.mine-grid{
+  width:100%;
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+}
+
+.cell{
+  width:100%; aspect-ratio:1/1;
+  border-radius:12px;
+  background:var(--cell);
+  border:1px solid var(--cell-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  opacity:0;
+  transform:scale(.6);
+}
+.cell.mine{
+  background:rgba(248,113,113,0.35);
+  border-color:#f87171;
+}
+
+@keyframes pop {
+  0%{ transform:scale(.6) rotate(-8deg); opacity:0;}
+  70%{ transform:scale(1.1) rotate(4deg); opacity:1;}
+  100%{ transform:scale(1) rotate(0deg); opacity:1;}
+}
+
+.shake{
+  animation:shake .35s ease;
+}
+@keyframes shake{
+  0%,100%{ transform:translate(0,0);}
+  20%{ transform:translate(-3px,2px);}
+  40%{ transform:translate(4px,-3px);}
+  60%{ transform:translate(-3px,3px);}
+  80%{ transform:translate(3px,-2px);}
+}
+
+.wave{
+  position:fixed;
+  top:50%; left:50%;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:radial-gradient(circle,#f87171 0%, transparent 70%);
+  transform:translate(-50%,-50%) scale(0);
+  opacity:0.8;
+  animation:wave 0.7s ease-out forwards;
+  pointer-events:none;
+}
+
+@keyframes wave {
+  0%{ transform:translate(-50%,-50%) scale(.3); opacity:.9; }
+  100%{ transform:translate(-50%,-50%) scale(12); opacity:0; }
+}
+
+.attempts{
+  font-size:13px;
+  margin-top:4px;
+  opacity:.75;
+}
+</style>
+</head>
+<body>
+
+<button class="back-btn" onclick="location.href='../index.html'">← Back</button>
+
+<div class="app-wrap">
+
+  <!-- PROMO -->
+  <section id="promoScreen" class="screen active">
+    <div class="card-title">MINES ACCESS</div>
+    <div class="sub">Enter your promo code</div>
+
+    <div class="field-wrap">
+      <div class="label">Promo code</div>
+      <div class="input-row">
+        <input id="promoInput" />
+        <div id="promoIndicator" class="indicator">?</div>
+      </div>
+      <div id="promoMsg" class="msg"></div>
+    </div>
+
+    <button id="promoBtn" class="btn">Check</button>
+  </section>
+
+  <!-- LINK -->
+  <section id="linkScreen" class="screen">
+    <div class="card-title">CASINO LINK</div>
+    <div class="sub">Paste Mines game URL</div>
+
+    <div class="field-wrap">
+      <div class="label">Game link</div>
+      <div class="input-row">
+        <input id="linkInput" />
+        <div id="linkIndicator" class="indicator">?</div>
+      </div>
+      <div id="linkMsg" class="msg"></div>
+    </div>
+
+    <button id="linkBtn" class="btn">Connect</button>
+  </section>
+
+  <!-- CONNECT -->
+  <section id="connectScreen" class="screen">
+    <div class="spinner"></div>
+    <div class="sub" style="letter-spacing:.15em;">CONNECTING...</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="card-title">MINES PREDICTOR</div>
+    <div id="attemptsText" class="attempts">Attempts left: 7</div>
+
+    <div class="mine-options" id="mineOptions">
+      <div class="mine-option active" data-m="3">3</div>
+      <div class="mine-option" data-m="5">5</div>
+      <div class="mine-option" data-m="8">8</div>
+      <div class="mine-option" data-m="10">10</div>
+      <div class="mine-option" data-m="15">15</div>
+    </div>
+
+    <button id="signalBtn" class="btn">Get signal</button>
+
+    <div id="mineGrid" class="mine-grid"></div>
+  </section>
+
+</div>
+
+<script>
+const API="/api";
+const GAME="mines";
+
+let attemptsLeft=0;
+let promo=null;
+let mineCount=3;
+
+const promoScreen=document.getElementById("promoScreen");
+const linkScreen=document.getElementById("linkScreen");
+const connectScreen=document.getElementById("connectScreen");
+const gameScreen=document.getElementById("gameScreen");
+
+function show(s){
+  [promoScreen,linkScreen,connectScreen,gameScreen].forEach(x=>x.classList.remove("active"));
+  s.classList.add("active");
+}
+
+/* PROMO */
+promoBtn.onclick=async()=>{
+  const code=promoInput.value.trim().toUpperCase();
+  if(!code)return;
+
+  promoIndicator.textContent="…";
+
+  const res=await fetch(`${API}/promo/check`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({game:GAME, code})
+  });
+  const data=await res.json();
+
+  if(!data.valid){
+    promoIndicator.className="indicator err";
+    promoIndicator.textContent="✕";
+    promoMsg.textContent="Invalid or exhausted";
+    return;
+  }
+
+  promoIndicator.className="indicator ok";
+  promoIndicator.textContent="✓";
+
+  promo=code;
+  attemptsLeft=data.attempts_left;
+
+  setTimeout(()=>show(linkScreen),300);
+};
+
+/* LINK */
+linkBtn.onclick=()=>{
+  const url=linkInput.value.trim();
+  if(!/^https?:\/\/[\w\-_.]+/i.test(url)){
+    linkIndicator.className="indicator err";
+    linkIndicator.textContent="✕";
+    linkMsg.textContent="Invalid link";
+    return;
+  }
+  linkIndicator.className="indicator ok";
+  linkIndicator.textContent="✓";
+
+  show(connectScreen);
+
+  setTimeout(()=>{
+    updateAttempts();
+    show(gameScreen);
+  },1800);
+};
+
+function updateAttempts(){
+  attemptsText.textContent=`Attempts left: ${attemptsLeft}`;
+}
+
+/* MINES UI */
+document.querySelectorAll(".mine-option").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".mine-option").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    mineCount=parseInt(btn.dataset.m);
+  };
+});
+
+/* SIGNAL */
+signalBtn.onclick=async()=>{
+  const res=await fetch(`${API}/game/use`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({game:GAME, code:promo})
+  });
+
+  if(!res.ok){
+    alert("Promo expired");
+    show(promoScreen);
+    return;
+  }
+
+  const data=await res.json();
+  attemptsLeft=data.remaining;
+  updateAttempts();
+
+  createMines();
+};
+
+/* MINES GENERATION */
+function createMines(){
+  const grid=document.getElementById("mineGrid");
+  grid.innerHTML="";
+
+  const cells=[...Array(25).keys()];
+  const mines=new Set();
+  while(mines.size<mineCount){
+    mines.add(Math.floor(Math.random()*25));
+  }
+
+  cells.forEach((id,idx)=>{
+    const c=document.createElement("div");
+    c.className="cell";
+    grid.appendChild(c);
+
+    setTimeout(()=>{
+      c.style.animation="pop .45s ease forwards";
+
+      if(mines.has(id)){
+        c.classList.add("mine");
+        c.textContent="💣";
+
+        document.body.classList.add("shake");
+        setTimeout(()=>document.body.classList.remove("shake"),350);
+
+        const w=document.createElement("div");
+        w.className="wave";
+        document.body.appendChild(w);
+        setTimeout(()=>w.remove(),700);
+      }
+    },idx*60);
+  });
+}
+</script>
+
+</body>
+</html>

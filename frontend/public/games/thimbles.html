@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MONEY TALKS — Thimbles</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap');
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #e5e7eb;
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 60%, #000 100%);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(56,189,248,0.12) 0, transparent 45%),
+        radial-gradient(circle at 80% 10%, rgba(129,140,248,0.10) 0, transparent 55%),
+        radial-gradient(circle at 50% 80%, rgba(251,146,60,0.12) 0, transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      background: rgba(15,23,42,0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.55);
+      color: #e5e7eb;
+      padding: 6px 12px;
+      font-size: 13px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .back-btn:hover {
+      border-color: #38bdf8;
+    }
+
+    .app-wrap {
+      width: 100%;
+      max-width: 480px;
+      padding: 18px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 16px 22px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.96));
+      border: 1px solid rgba(148,163,184,0.45);
+      box-shadow:
+        0 22px 50px rgba(15,23,42,0.9),
+        0 0 0 1px rgba(15,23,42,0.7);
+    }
+    .screen.active { display: flex; }
+
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      background: linear-gradient(110deg, #e5e7eb, #f97316);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .sub {
+      font-size: 12px;
+      opacity: .75;
+    }
+
+    .field-wrap {
+      width: 100%;
+      margin-top: 4px;
+    }
+    .label {
+      font-size: 12px;
+      text-align: left;
+      opacity: .7;
+      margin-bottom: 4px;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.95);
+      color: #e5e7eb;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-row input:focus {
+      border-color: #38bdf8;
+    }
+    .indicator {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.9);
+    }
+    .indicator.ok {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    .indicator.err {
+      border-color: #f97373;
+      color: #f97373;
+    }
+    .msg {
+      font-size: 11px;
+      color: #f97373;
+      min-height: 14px;
+      margin-top: 4px;
+      text-align: left;
+    }
+
+    .btn {
+      margin-top: 10px;
+      padding: 11px 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      background: linear-gradient(110deg, #38bdf8, #6366f1);
+      color: #020617;
+      box-shadow: 0 12px 30px rgba(56,189,248,0.4);
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
+    }
+    .btn:active {
+      transform: translateY(1px) scale(.98);
+      box-shadow: 0 8px 18px rgba(56,189,248,0.32);
+    }
+    .btn:disabled {
+      opacity: .5;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    .spinner {
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      border: 5px solid rgba(148,163,184,0.35);
+      border-top-color: #38bdf8;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .best-box {
+      margin-top: 4px;
+    }
+
+    .best-label {
+      font-size: 12px;
+      opacity: .75;
+    }
+
+    .best-value {
+      margin-top: 2px;
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(110deg, #fde047, #facc15, #fef9c3);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 18px rgba(234,179,8,0.55);
+    }
+
+    .attempts {
+      margin-top: 4px;
+      font-size: 12px;
+      opacity: .85;
+    }
+
+    .board {
+      margin: 16px auto 0;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 3/4;
+      border-radius: 20px;
+      border: 1px solid rgba(96,165,250,0.55);
+      background: radial-gradient(circle at top, #020617, #020617 55%, #000 100%);
+      box-shadow:
+        0 24px 50px rgba(15,23,42,0.9),
+        0 0 32px rgba(56,189,248,0.25);
+      padding: 24px 16px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .thimbles-row {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding-bottom: 40px;
+    }
+
+    .thimble-wrap {
+      position: relative;
+      width: 90px;
+      height: 110px;
+    }
+
+    .thimble {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px 999px 36px 36px;
+      background: linear-gradient(145deg, #0b1220, #020617);
+      border: 1px solid rgba(148,163,184,0.6);
+      box-shadow:
+        inset 0 6px 10px rgba(148,163,184,0.3),
+        0 12px 25px rgba(15,23,42,0.9);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      overflow: hidden;
+      transform-origin: bottom center;
+    }
+
+    .thimble::before {
+      content: "";
+      position: absolute;
+      inset: 10px 8px auto 8px;
+      height: 16px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0%, #1f2937, #020617);
+      border: 1px solid rgba(248,250,252,0.12);
+    }
+
+    .thimble::after {
+      content: "";
+      position: absolute;
+      inset: auto 8px 6px 8px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0%, #111827, #020617);
+      opacity: .9;
+    }
+
+    .thimble.active {
+      border-color: #facc15;
+      box-shadow:
+        0 0 22px rgba(250,204,21,0.95),
+        inset 0 8px 14px rgba(248,250,252,0.18);
+    }
+
+    .thimble.shuffle {
+      animation: shuffle 0.35s ease-in-out infinite alternate;
+    }
+
+    @keyframes shuffle {
+      0%   { transform: translateX(-6px) rotate(-4deg); }
+      100% { transform: translateX(6px) rotate(4deg); }
+    }
+
+    .coin {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0%, #fef3c7, #facc15);
+      box-shadow: 0 0 14px rgba(250,204,21,0.9);
+      left: 50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity .25s ease-out, transform .25s ease-out;
+    }
+
+    .coin.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    .coin::after {
+      content: "★";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #92400e;
+      font-weight: 800;
+    }
+
+    .label-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      font-size: 11px;
+      opacity: .9;
+    }
+
+    .coef-label {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(148,163,184,0.5);
+    }
+
+    .coef-label.hot {
+      background: #f97316;
+      border-color: #fed7aa;
+      color: #111827;
+      box-shadow: 0 0 16px rgba(248,113,113,0.85);
+      font-weight: 700;
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: .65;
+    }
+  </style>
+</head>
+<body>
+
+<button class="back-btn" onclick="window.location.href='../index.html'">
+  ← <span>MONEY TALKS</span>
+</button>
+
+<div class="app-wrap">
+
+  <!-- PROMO -->
+  <section id="promoScreen" class="screen active">
+    <div class="title">THIMBLES ACCESS</div>
+    <div class="sub">Enter one-time promo code for Thimbles</div>
+
+    <div class="field-wrap">
+      <div class="label">Promo code</div>
+      <div class="input-row">
+        <input id="promoInput" placeholder="EXAMPLE88" maxlength="16" />
+        <div id="promoIndicator" class="indicator">?</div>
+      </div>
+      <div id="promoMsg" class="msg"></div>
+    </div>
+
+    <button id="promoBtn" class="btn">Check promo</button>
+  </section>
+
+  <!-- LINK -->
+  <section id="linkScreen" class="screen">
+    <div class="title">CASINO LINK</div>
+    <div class="sub">Paste Thimbles / Cups game URL from your casino</div>
+
+    <div class="field-wrap">
+      <div class="label">Game link</div>
+      <div class="input-row">
+        <input id="linkInput" placeholder="https://example.com/game/thimbles" />
+        <div id="linkIndicator" class="indicator">?</div>
+      </div>
+      <div id="linkMsg" class="msg"></div>
+    </div>
+
+    <button id="linkBtn" class="btn">Connect</button>
+  </section>
+
+  <!-- CONNECTION -->
+  <section id="connectScreen" class="screen">
+    <div class="spinner"></div>
+    <div class="sub" style="text-transform:uppercase; letter-spacing:.18em;">Connecting...</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <h1 class="title">THIMBLES ANALYZER</h1>
+    <div class="sub">Simulated prediction. No real bets.</div>
+
+    <div class="best-box">
+      <div class="best-label">Prediction result</div>
+      <div id="bestMult" class="best-value">x0.00</div>
+    </div>
+
+    <div id="attempts" class="attempts">Attempts left: 0</div>
+
+    <div class="board">
+      <div class="thimbles-row">
+        <div class="thimble-wrap" data-i="0">
+          <div class="thimble"></div>
+          <div class="coin"></div>
+        </div>
+        <div class="thimble-wrap" data-i="1">
+          <div class="thimble"></div>
+          <div class="coin"></div>
+        </div>
+        <div class="thimble-wrap" data-i="2">
+          <div class="thimble"></div>
+          <div class="coin"></div>
+        </div>
+      </div>
+
+      <div class="label-row">
+        <div class="coef-label" data-i="0">x1.30</div>
+        <div class="coef-label" data-i="1">x2.50</div>
+        <div class="coef-label" data-i="2">x4.00</div>
+      </div>
+    </div>
+
+    <button id="signalBtn" class="btn">Get signal</button>
+    <div class="hint">Analyzer picks the most probable safe cup. 7 signals per promo.</div>
+  </section>
+
+</div>
+
+<script>
+  const API_BASE = "/api";
+  const GAME_ID = "thimbles";
+
+  let attemptsLeft = 0;
+  let currentPromo = null;
+  let busy = false;
+  let bestMult = 0;
+
+  const promoScreen   = document.getElementById("promoScreen");
+  const linkScreen    = document.getElementById("linkScreen");
+  const connectScreen = document.getElementById("connectScreen");
+  const gameScreen    = document.getElementById("gameScreen");
+
+  function showScreen(screen) {
+    [promoScreen, linkScreen, connectScreen, gameScreen].forEach(s => s.classList.remove("active"));
+    screen.classList.add("active");
+  }
+
+  // ---------- PROMO ----------
+  const promoInput     = document.getElementById("promoInput");
+  const promoIndicator = document.getElementById("promoIndicator");
+  const promoMsg       = document.getElementById("promoMsg");
+  const promoBtn       = document.getElementById("promoBtn");
+
+  promoInput.addEventListener("input", () => {
+    promoIndicator.className = "indicator";
+    promoIndicator.textContent = "?";
+    promoMsg.textContent = "";
+  });
+
+  promoBtn.onclick = async () => {
+    const code = promoInput.value.trim().toUpperCase();
+    if (!code) {
+      promoMsg.textContent = "Enter promo code.";
+      promoIndicator.className = "indicator err";
+      promoIndicator.textContent = "✕";
+      return;
+    }
+
+    promoBtn.disabled = true;
+    promoIndicator.className = "indicator";
+    promoIndicator.textContent = "…";
+    promoMsg.textContent = "";
+
+    try {
+      const res = await fetch(`${API_BASE}/promo/check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game: GAME_ID, code })
+      });
+
+      const data = await res.json();
+
+      if (!data.valid) {
+        promoIndicator.className = "indicator err";
+        promoIndicator.textContent = "✕";
+        promoMsg.textContent = "Promo invalid or attempts finished.";
+        promoBtn.disabled = false;
+        return;
+      }
+
+      attemptsLeft = data.attempts_left;
+      currentPromo = code;
+
+      promoIndicator.className = "indicator ok";
+      promoIndicator.textContent = "✓";
+      promoMsg.textContent = "";
+
+      setTimeout(() => showScreen(linkScreen), 260);
+    } catch (e) {
+      console.error(e);
+      promoIndicator.className = "indicator err";
+      promoIndicator.textContent = "!";
+      promoMsg.textContent = "Connection error.";
+    } finally {
+      promoBtn.disabled = false;
+    }
+  };
+
+  // ---------- LINK ----------
+  const linkInput     = document.getElementById("linkInput");
+  const linkIndicator = document.getElementById("linkIndicator");
+  const linkMsg       = document.getElementById("linkMsg");
+  const linkBtn       = document.getElementById("linkBtn");
+
+  linkInput.addEventListener("input", () => {
+    linkIndicator.className = "indicator";
+    linkIndicator.textContent = "?";
+    linkMsg.textContent = "";
+  });
+
+  function isValidUrl(url) {
+    return /^https?:\/\/[\w\-_.]+/i.test(url);
+  }
+
+  linkBtn.onclick = () => {
+    const url = linkInput.value.trim();
+    if (!isValidUrl(url)) {
+      linkIndicator.className = "indicator err";
+      linkIndicator.textContent = "✕";
+      linkMsg.textContent = "Invalid URL.";
+      return;
+    }
+
+    linkIndicator.className = "indicator ok";
+    linkIndicator.textContent = "✓";
+    linkMsg.textContent = "";
+
+    showScreen(connectScreen);
+
+    setTimeout(() => {
+      updateAttemptsText();
+      showScreen(gameScreen);
+    }, 2200 + Math.random() * 800);
+  };
+
+  // ---------- GAME LOGIC ----------
+  const MULTS   = [1.30, 2.50, 4.00];
+  const bestEl  = document.getElementById("bestMult");
+  const attemptsEl = document.getElementById("attempts");
+  const btn     = document.getElementById("signalBtn");
+
+  const thimbles = Array.from(document.querySelectorAll(".thimble-wrap"));
+  const cups     = thimbles.map(t => t.querySelector(".thimble"));
+  const coins    = thimbles.map(t => t.querySelector(".coin"));
+  const labels   = Array.from(document.querySelectorAll(".coef-label"));
+
+  function updateAttemptsText() {
+    attemptsEl.textContent = "Attempts left: " + attemptsLeft;
+  }
+
+  function weightedChoice() {
+    const r = Math.random();
+    if (r < 0.55) return 1;  // центр чаще
+    if (r < 0.8)  return 0;  // левый
+    return 2;                // правый
+  }
+
+  async function requestUseFromServer() {
+    if (!currentPromo) throw new Error("no_promo");
+
+    const res = await fetch(`${API_BASE}/game/use`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ game: GAME_ID, code: currentPromo })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      if (data.detail === "limit_exceeded") {
+        attemptsLeft = 0;
+        updateAttemptsText();
+        throw new Error("limit");
+      }
+      throw new Error("server");
+    }
+
+    attemptsLeft = data.remaining;
+    return data;
+  }
+
+  function resetBoardVisual() {
+    cups.forEach(c => c.classList.remove("active","shuffle"));
+    coins.forEach(c => c.classList.remove("show"));
+    labels.forEach(l => l.classList.remove("hot"));
+  }
+
+  function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+  }
+
+  async function runSignalAnimation() {
+    resetBoardVisual();
+
+    cups.forEach(c => c.classList.add("shuffle"));
+    const pick = weightedChoice();
+    const mult = MULTS[pick];
+
+    await sleep(1400);
+
+    cups.forEach(c => c.classList.remove("shuffle"));
+
+    cups[pick].classList.add("active");
+    coins[pick].classList.add("show");
+    labels[pick].classList.add("hot");
+
+    if (mult > bestMult) {
+      bestMult = mult;
+    }
+    bestEl.textContent = "x" + bestMult.toFixed(2);
+  }
+
+  btn.onclick = async () => {
+    if (busy) return;
+    if (!currentPromo) {
+      alert("Promo is required.");
+      showScreen(promoScreen);
+      return;
+    }
+
+    if (attemptsLeft <= 0) {
+      alert("No attempts left for this promo.");
+      showScreen(promoScreen);
+      return;
+    }
+
+    busy = true;
+    btn.disabled = true;
+
+    try {
+      await requestUseFromServer();
+    } catch (e) {
+      if (e.message === "limit") {
+        alert("All attempts are used for this promo.");
+        showScreen(promoScreen);
+      } else {
+        alert("Server error. Try again later.");
+      }
+      busy = false;
+      btn.disabled = false;
+      return;
+    }
+
+    updateAttemptsText();
+
+    if (attemptsLeft < 0) attemptsLeft = 0;
+
+    await runSignalAnimation();
+
+    busy = false;
+    btn.disabled = false;
+  };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MONEY TALKS — Aviator</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap');
+
+:root {
+  --bg: #020617;
+  --accent1: #38bdf8;
+  --accent2: #6366f1;
+  --success: #4ade80;
+  --danger: #f87171;
+  --gold1: #fde047;
+  --gold2: #facc15;
+  --gold3: #fef9c3;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin:0; padding:0; height:100%; width:100%;
+  background:#020617; color:#e5e7eb;
+  font-family: Inter, sans-serif;
+}
+
+body {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.back-btn {
+  position:fixed;
+  top:12px; left:12px;
+  padding:6px 14px;
+  font-size:14px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.4);
+  background:rgba(15,23,42,0.9);
+  cursor:pointer;
+  z-index:20;
+}
+
+.app-wrap {
+  width:100%;
+  max-width:480px;
+  padding:16px;
+}
+
+.screen {
+  display:none;
+  background:rgba(15,23,42,0.96);
+  border:1px solid rgba(148,163,184,0.4);
+  border-radius:20px;
+  padding:24px;
+  text-align:center;
+}
+.screen.active { display:flex; flex-direction:column; gap:16px; }
+
+.card-title {
+  font-size:20px; font-weight:800;
+  letter-spacing:0.15em; text-transform:uppercase;
+  background:linear-gradient(90deg,#fff,#f97316);
+  -webkit-background-clip:text; color:transparent;
+}
+
+.sub { font-size:12px; opacity:.8; }
+
+.field-wrap { width:100%; text-align:left; }
+.label { font-size:12px; margin-bottom:4px; opacity:.75; }
+
+.input-row { display:flex; gap:8px; }
+.input-row input {
+  flex:1; padding:12px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.6);
+  background:#0f172a;
+  color:#e5e7eb;
+}
+.indicator {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(148,163,184,0.6);
+}
+.indicator.ok { border-color:var(--success); color:var(--success); }
+.indicator.err { border-color:var(--danger); color:var(--danger); }
+
+.msg { color:var(--danger); font-size:11px; min-height:12px; }
+
+.btn {
+  padding:12px 24px;
+  border:none;
+  font-weight:700;
+  border-radius:999px;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  color:#020617;
+  cursor:pointer;
+}
+
+.spinner {
+  width:48px; height:48px;
+  border-radius:50%;
+  border:5px solid rgba(148,163,184,0.3);
+  border-top-color:var(--accent1);
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.graph-box {
+  background:#0f172a;
+  padding:12px;
+  border-radius:16px;
+  border:1px solid #334155;
+}
+.graph-inner {
+  position:relative;
+  width:100%;
+  aspect-ratio:4/3;
+  background:#020617;
+  border-radius:12px;
+  overflow:hidden;
+}
+#graphCanvas {
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+}
+.flash {
+  position:absolute;
+  inset:0;
+  background:white;
+  opacity:0;
+  pointer-events:none;
+}
+.mult-value {
+  font-size:32px; font-weight:800;
+  background:linear-gradient(90deg,var(--gold1),var(--gold2),var(--gold3));
+  -webkit-background-clip:text;
+  color:transparent;
+  text-shadow:0 0 10px rgba(250,204,21,0.5);
+}
+.attempts { font-size:12px; opacity:.8; }
+</style>
+</head>
+<body>
+
+<button class="back-btn" onclick="location.href='../index.html'">← Back</button>
+
+<div class="app-wrap">
+
+  <!-- PROMO -->
+  <section id="promoScreen" class="screen active">
+    <div class="card-title">AVIATOR ACCESS</div>
+    <div class="sub">Enter one-time promo</div>
+
+    <div class="field-wrap">
+      <div class="label">Promo code</div>
+      <div class="input-row">
+        <input id="promoInput" />
+        <div id="promoIndicator" class="indicator">?</div>
+      </div>
+      <div id="promoMsg" class="msg"></div>
+    </div>
+
+    <button id="promoBtn" class="btn">Check</button>
+  </section>
+
+  <!-- LINK -->
+  <section id="linkScreen" class="screen">
+    <div class="card-title">CASINO LINK</div>
+    <div class="sub">Paste game URL</div>
+
+    <div class="field-wrap">
+      <div class="label">Game link</div>
+      <div class="input-row">
+        <input id="linkInput" />
+        <div id="linkIndicator" class="indicator">?</div>
+      </div>
+      <div id="linkMsg" class="msg"></div>
+    </div>
+
+    <button id="linkBtn" class="btn">Connect</button>
+  </section>
+
+  <!-- CONNECTING -->
+  <section id="connectScreen" class="screen">
+    <div class="spinner"></div>
+    <div class="sub" style="letter-spacing:0.15em;">CONNECTING...</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
+    <div class="card-title">AVIATOR</div>
+    <div class="mult-value" id="multValue">x1.00</div>
+    <div class="attempts" id="attemptsText">Attempts: 7</div>
+
+    <div class="graph-box">
+      <div class="graph-inner">
+        <canvas id="graphCanvas"></canvas>
+        <div id="flash" class="flash"></div>
+      </div>
+    </div>
+
+    <button id="signalBtn" class="btn">Get signal</button>
+  </section>
+
+</div>
+
+<script>
+/* ======================
+   GLOBALS
+====================== */
+const API = "/api";
+const GAME = "aviator";
+
+let attemptsLeft = 0;
+let promoCode = null;
+let animating = false;
+
+/* Screens */
+const promoScreen   = document.getElementById("promoScreen");
+const linkScreen    = document.getElementById("linkScreen");
+const connectScreen = document.getElementById("connectScreen");
+const gameScreen    = document.getElementById("gameScreen");
+
+/* Helpers */
+function show(s) {
+  [promoScreen, linkScreen, connectScreen, gameScreen].forEach(x => x.classList.remove("active"));
+  s.classList.add("active");
+}
+
+/* ======================
+   PROMO CHECK
+====================== */
+promoBtn.onclick = async () => {
+  const code = promoInput.value.trim().toUpperCase();
+  if (!code) return;
+
+  promoIndicator.textContent = "…";
+
+  const res = await fetch(`${API}/promo/check`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ game:GAME, code })
+  });
+
+  const data = await res.json();
+
+  if (!data.valid) {
+    promoIndicator.className = "indicator err";
+    promoIndicator.textContent = "✕";
+    promoMsg.textContent = "Invalid or exhausted";
+    return;
+  }
+
+  promoIndicator.className = "indicator ok";
+  promoIndicator.textContent = "✓";
+
+  attemptsLeft = data.attempts_left;
+  promoCode = code;
+
+  setTimeout(() => show(linkScreen), 300);
+};
+
+/* ======================
+   LINK CHECK
+====================== */
+linkBtn.onclick = () => {
+  const url = linkInput.value.trim();
+
+  if (!/^https?:\/\/[\w\-_.]+/i.test(url)) {
+    linkIndicator.className="indicator err";
+    linkIndicator.textContent="✕";
+    linkMsg.textContent="Invalid link";
+    return;
+  }
+
+  linkIndicator.className="indicator ok";
+  linkIndicator.textContent="✓";
+  linkMsg.textContent="";
+
+  show(connectScreen);
+
+  setTimeout(() => {
+    updateAttempts();
+    show(gameScreen);
+  }, 2200);
+};
+
+/* ======================
+   CANVAS FIXED SIZING
+====================== */
+const canvas = document.getElementById("graphCanvas");
+const ctx = canvas.getContext("2d");
+const flashEl = document.getElementById("flash");
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  if (rect.width < 10) return;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.style.width = rect.width + "px";
+  canvas.style.height = rect.height + "px";
+
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", resize);
+setTimeout(resize, 50);
+setTimeout(resize, 300);
+
+/* ======================
+   SIGNAL GENERATION
+====================== */
+function updateAttempts() {
+  attemptsText.textContent = `Attempts left: ${attemptsLeft}`;
+}
+
+function flash() {
+  flashEl.style.opacity="1";
+  setTimeout(()=> flashEl.style.opacity="0", 200);
+}
+
+signalBtn.onclick = async () => {
+  if (animating) return;
+
+  const res = await fetch(`${API}/game/use`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ game:GAME, code:promoCode })
+  });
+
+  if (!res.ok) {
+    alert("Promo expired");
+    show(promoScreen);
+    return;
+  }
+
+  const data = await res.json();
+  attemptsLeft = data.remaining;
+  updateAttempts();
+
+  animating = true;
+
+  const target = +(1.2 + Math.random()*2).toFixed(2);
+  const dur = 4 + Math.random()*3;
+
+  let t=0;
+  let last=performance.now();
+
+  function loop(ts){
+    const dt=(ts-last)/1000; last=ts;
+    t+=dt;
+    const p=Math.min(1,t/dur);
+    const m=1+(target-1)*Math.pow(p,.9);
+
+    multValue.textContent="x"+m.toFixed(2);
+    draw(p);
+
+    if(p>=1){
+      multValue.textContent="x"+target.toFixed(2);
+      flash();
+      animating=false;
+      return;
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+};
+
+function draw(p){
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+
+  const pad=30;
+  const x0=pad, y0=h-pad;
+  const x1=w-pad, y1=pad;
+
+  const x=x0+(x1-x0)*p;
+  const curve=Math.log1p(p*3)/Math.log(4);
+  const y=y0-(y0-y1)*curve;
+
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(x0,y0);
+  ctx.lineTo(x,y);
+  ctx.stroke();
+
+  // plane
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(-0.3);
+
+  ctx.fillStyle="#f97316";
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-26,7);
+  ctx.lineTo(-26,-7);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+</script>
+</body>
+</html>

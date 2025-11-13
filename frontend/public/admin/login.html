@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("../assets/bg/bdadm.jpg") center/cover no-repeat fixed;
+      color: #fff;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 92%;
+      max-width: 380px;
+      padding: 24px 22px 20px;
+      border-radius: 18px;
+      background: rgba(6, 10, 20, .9);
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 0 25px rgba(255,126,0,.4);
+      text-align: center;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(90deg,#ff006a,#ff7e00);
+      -webkit-background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    h2 span {
+      font-size: 20px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+      text-align: left;
+      font-size: 13px;
+      opacity: .85;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      padding: 11px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 15px;
+      background: linear-gradient(90deg,#ff006a,#ff7e00);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(255,126,0,.6);
+      transition: transform .15s ease;
+    }
+
+    button:active {
+      transform: scale(.96);
+    }
+
+    #error {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #ff5252;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="card">
+    <h2>💎 <span>Admin Panel</span></h2>
+
+    <div class="field">
+      Логин
+      <input id="user" placeholder="Worker077" autocomplete="username" />
+    </div>
+
+    <div class="field">
+      Пароль
+      <input id="pass" type="password" placeholder="Пароль" autocomplete="current-password" />
+    </div>
+
+    <button onclick="login()">Войти</button>
+
+    <div id="error"></div>
+  </div>
+
+  <script>
+    async function login() {
+      const user = document.getElementById('user').value.trim();
+      const password = document.getElementById('pass').value.trim();
+      const errorEl = document.getElementById('error');
+
+      errorEl.textContent = "";
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          errorEl.textContent = 'Неверный логин или пароль';
+          return;
+        }
+
+        // сохраняем токен для dashboard
+        localStorage.setItem('mt_admin_token', data.token);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        errorEl.textContent = 'Ошибка соединения';
+      }
+    }
+  </script>
+</body>
+</html>

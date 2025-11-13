@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MONEY TALKS — iSignal</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap");
+
+    :root {
+      --bg: #020311;
+      --accent: #00e5ff;
+      --accent2: #ff3bff;
+      --card-bg: rgba(8, 14, 32, 0.9);
+      --card-border: rgba(255, 255, 255, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, system-ui, sans-serif;
+      color: #fff;
+    }
+
+    body {
+      background: #000 url("assets/bg/bgm.jpg") center/cover no-repeat fixed;
+      overflow: hidden;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ====== LOADER ====== */
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #020312, #000);
+      z-index: 50;
+    }
+
+    .loader-inner {
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .loader-diamond {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 14px;
+      background: conic-gradient(
+        from 120deg,
+        #00ffff,
+        #00aaff,
+        #ffffff,
+        #ff80ff,
+        #00ffff
+      );
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8));
+      animation: pulse 1.7s ease-in-out infinite alternate;
+    }
+
+    .loader-logo {
+      font-size: 28px;
+      letter-spacing: 0.16em;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #00ffff, #ff6bff, #ffe26b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow:
+        0 0 18px rgba(0, 255, 255, 0.8),
+        0 0 32px rgba(0, 0, 0, 0.9);
+      margin-bottom: 8px;
+    }
+
+    .loader-sub {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .loader-dots::after {
+      content: "...";
+      animation: dots 1.3s steps(4,end) infinite;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(0.96) translateY(0); }
+      to   { transform: scale(1.06) translateY(-4px); }
+    }
+    @keyframes dots {
+      0%   { content: "";   }
+      25%  { content: ".";  }
+      50%  { content: ".."; }
+      75%  { content: "...";}
+      100% { content: "";   }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+
+    /* ====== FULLSCREEN LANGUAGE PICKER ====== */
+
+    .lang-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+      background: radial-gradient(circle at top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.96));
+    }
+
+    .lang-card {
+      width: 100%;
+      max-width: 460px;
+      border-radius: 24px;
+      padding: 24px 20px 22px;
+      background: radial-gradient(circle at top, #0a1328, #050816);
+      box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.9),
+        0 0 80px rgba(0, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lang-card::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(0, 255, 255, 0.08), transparent 55%),
+        radial-gradient(circle at 80% 100%, rgba(255, 0, 255, 0.09), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .lang-logo {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .lang-logo-diamond {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 6px;
+      background: conic-gradient(from 120deg, #00ffff, #00aaff, #ffffff, #ffe26b, #00ffff);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.8));
+    }
+
+    .lang-logo-text {
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      font-size: 18px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #00ffff, #ff6bff, #ffe26b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lang-subtitle {
+      position: relative;
+      font-size: 13px;
+      opacity: 0.82;
+      margin-bottom: 14px;
+    }
+
+    .lang-buttons {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 10px 0 4px;
+    }
+
+    @media (max-width: 480px) {
+      .lang-card {
+        padding: 20px 16px 18px;
+        max-width: 380px;
+      }
+      .lang-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .lang-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 14px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      background: rgba(12, 26, 58, 0.95);
+      color: #f5f6ff;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .lang-btn span.flag {
+      font-size: 16px;
+    }
+
+    .lang-btn span.label-main {
+      font-weight: 600;
+    }
+
+    .lang-btn span.label-sub {
+      font-size: 11px;
+      opacity: 0.65;
+    }
+
+    .lang-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(90deg, #05162a, #10234a);
+      box-shadow: 0 0 14px rgba(0, 255, 255, 0.35);
+    }
+
+    .lang-footer {
+      position: relative;
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    /* ====== MAIN APP (сетка 2x3) ====== */
+
+    .app {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 10px 18px;
+      backdrop-filter: blur(4px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 4px 0;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(90deg, #00ffff, #ff6bff);
+      color: #000;
+      font-weight: 600;
+    }
+
+    #langSelect {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: rgba(10, 21, 48, 0.9);
+      color: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .center {
+      max-width: 1020px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand {
+      text-align: center;
+    }
+
+    .brand-logo {
+      font-size: 40px;
+      margin-bottom: 4px;
+    }
+
+    .brand-title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #00ffff, #ff6bff, #ffe26b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .brand-sub {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 11px;
+    }
+
+    .brand-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(5, 15, 38, 0.9);
+      border: 1px solid rgba(0, 255, 255, 0.4);
+    }
+
+    .cards-grid {
+      width: 100%;
+      max-width: 720px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 24px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+      }
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.7),
+        0 0 25px rgba(0, 0, 0, 0.8);
+      text-decoration: none;
+      color: #fff;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(0, 255, 255, 0.8);
+      box-shadow:
+        0 22px 48px rgba(0, 0, 0, 0.85),
+        0 0 22px rgba(0, 255, 255, 0.45);
+    }
+
+    .card-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 16px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(0, 0, 0, 0.75);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .card-sub {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOADER -->
+  <div id="loader" class="loader">
+    <div class="loader-inner">
+      <div class="loader-diamond"></div>
+      <div class="loader-logo">MONEY TALKS</div>
+      <div class="loader-sub loader-dots">Loading</div>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN LANGUAGE PICKER -->
+  <div id="langOverlay" class="lang-overlay hidden">
+    <div class="lang-card">
+      <div class="lang-logo">
+        <div class="lang-logo-diamond"></div>
+        <div class="lang-logo-text">MONEY TALKS</div>
+      </div>
+      <div class="lang-subtitle">Choose your language / Выберите язык</div>
+
+      <div class="lang-buttons">
+        <button class="lang-btn" data-lang-choice="en">
+          <span class="flag">🇬🇧</span>
+          <span>
+            <span class="label-main">English</span><br />
+            <span class="label-sub">Default</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="es">
+          <span class="flag">🇪🇸</span>
+          <span>
+            <span class="label-main">Español</span><br />
+            <span class="label-sub">Latino / EU</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="tr">
+          <span class="flag">🇹🇷</span>
+          <span>
+            <span class="label-main">Türkçe</span><br />
+            <span class="label-sub">TR players</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="ru">
+          <span class="flag">🇷🇺</span>
+          <span>
+            <span class="label-main">Русский</span><br />
+            <span class="label-sub">CIS region</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="kk">
+          <span class="flag">🇰🇿</span>
+          <span>
+            <span class="label-main">Қазақша</span><br />
+            <span class="label-sub">Kazakhstan</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="fr">
+          <span class="flag">🇫🇷</span>
+          <span>
+            <span class="label-main">Français</span><br />
+            <span class="label-sub">FR & CA</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="de">
+          <span class="flag">🇩🇪</span>
+          <span>
+            <span class="label-main">Deutsch</span><br />
+            <span class="label-sub">DE / AT / CH</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="zh">
+          <span class="flag">🇨🇳</span>
+          <span>
+            <span class="label-main">中文</span><br />
+            <span class="label-sub">Chinese</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="az">
+          <span class="flag">🇦🇿</span>
+          <span>
+            <span class="label-main">Azərbaycanca</span><br />
+            <span class="label-sub">Azerbaijan</span>
+          </span>
+        </button>
+
+        <button class="lang-btn" data-lang-choice="uz">
+          <span class="flag">🇺🇿</span>
+          <span>
+            <span class="label-main">Oʻzbekcha</span><br />
+            <span class="label-sub">Uzbekistan</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="lang-footer">
+        You can change language later in the top-right corner.
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="app hidden">
+    <header class="topbar">
+      <select id="langSelect">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="tr">Türkçe</option>
+        <option value="ru">Русский</option>
+        <option value="kk">Қазақша</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="zh">中文</option>
+        <option value="az">Azərbaycanca</option>
+        <option value="uz">Oʻzbekcha</option>
+      </select>
+      <button id="soundBtn" class="btn-pill">🔈</button>
+    </header>
+
+    <main class="main">
+      <section class="center">
+        <div class="brand">
+          <div class="brand-logo">💎</div>
+          <div class="brand-title" data-i18n="title">MONEY TALKS</div>
+          <div class="brand-sub">
+            <div class="brand-pill" data-i18n="accuracy">ACCURACY 99.8%</div>
+            <div class="brand-pill" data-i18n="free">FOR FREE!</div>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <a class="card" href="games/aviator.html" data-game="aviator">
+            <img src="assets/games/aviator.png" alt="Aviator" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="aviator">Aviator</div>
+              <div class="card-sub" data-i18n-game-sub="aviator">
+                Crash signal analyzer
+              </div>
+            </div>
+          </a>
+
+          <a class="card" href="games/mines.html" data-game="mines">
+            <img src="assets/games/mines.png" alt="Mines" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="mines">Mines</div>
+              <div class="card-sub" data-i18n-game-sub="mines">
+                Safe cells predictor
+              </div>
+            </div>
+          </a>
+
+          <a class="card" href="games/plinko.html" data-game="plinko">
+            <img src="assets/games/plinko.png" alt="Plinko" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="plinko">Plinko</div>
+              <div class="card-sub" data-i18n-game-sub="plinko">
+                Balls drop path
+              </div>
+            </div>
+          </a>
+
+          <a class="card" href="games/chickenroad.html" data-game="chicken">
+            <img src="assets/games/chickenroad.png" alt="Chicken Road" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="chicken">Chicken Road</div>
+              <div class="card-sub" data-i18n-game-sub="chicken">
+                Road safety forecast
+              </div>
+            </div>
+          </a>
+
+          <a class="card" href="games/footballx.html" data-game="footballx">
+            <img src="assets/games/footballx.png" alt="Penalty Shootout" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="footballx">Penalty Shootout</div>
+              <div class="card-sub" data-i18n-game-sub="footballx">
+                Multiplier run strategy
+              </div>
+            </div>
+          </a>
+
+          <a class="card" href="games/thimbles.html" data-game="thimbles">
+            <img src="assets/games/thimbles.png" alt="Thimbles" class="card-img" />
+            <div>
+              <div class="card-title" data-i18n-game="thimbles">Thimbles</div>
+              <div class="card-sub" data-i18n-game-sub="thimbles">
+                Cup position analyzer
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- OPTIONAL AUDIO -->
+  <audio id="bgAudio" loop>
+    <source src="assets/sounds/house-loop.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="lang.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    // ===== LOADER + LANG OVERLAY LOGIC =====
+    window.addEventListener("load", () => {
+      const loader = document.getElementById("loader");
+      const langOverlay = document.getElementById("langOverlay");
+      const app = document.getElementById("app");
+
+      const savedLang = localStorage.getItem("language") || "en";
+      const langChosen = localStorage.getItem("langChosen") === "1";
+
+      const select = document.getElementById("langSelect");
+      if (select) select.value = savedLang;
+
+      setTimeout(() => {
+        loader.classList.add("hidden");
+        if (!langChosen) {
+          langOverlay.classList.remove("hidden");
+        } else {
+          app.classList.remove("hidden");
+        }
+      }, 1500);
+    });
+
+    // выбор языка в оверлее
+    document.querySelectorAll("[data-lang-choice]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const lang = btn.dataset.langChoice || "en";
+        localStorage.setItem("language", lang);
+        localStorage.setItem("langChosen", "1");
+        location.reload();
+      });
+    });
+
+    // выбор языка в топбаре
+    const sel = document.getElementById("langSelect");
+    if (sel) {
+      sel.addEventListener("change", (e) => {
+        localStorage.setItem("language", e.target.value);
+        localStorage.setItem("langChosen", "1");
+        location.reload();
+      });
+    }
+  </script>
+
+  <script src="live-config.js"></script>
+</body>
+</html>
